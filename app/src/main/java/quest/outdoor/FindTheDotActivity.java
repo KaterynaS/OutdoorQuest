@@ -3,8 +3,15 @@ package quest.outdoor;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,6 +24,7 @@ public class FindTheDotActivity extends AppCompatActivity {
     TextView dotDescriptionTextView;
     Button hintButton;
     ImageView compassImageView;
+
     Button verifyButton;
 
     EditText codeVerificationInput;
@@ -30,11 +38,9 @@ public class FindTheDotActivity extends AppCompatActivity {
         setContentView(R.layout.activity_find_the_dot);
 
         hintButton = findViewById(R.id.hint_button);
-        compassImageView = findViewById(R.id.compassImageView);
         verifyButton = findViewById(R.id.verify_button);
 
         appState = AppState.getInstance();
-
 
         updateUI();
 
@@ -58,6 +64,7 @@ public class FindTheDotActivity extends AppCompatActivity {
         });
 
     }
+
 
     private void verifyCode() {
         //create dialog to verify code - with one button (ok)
@@ -127,6 +134,5 @@ public class FindTheDotActivity extends AppCompatActivity {
         alert.setTitle("Hint");
         alert.show();
     }
-
 
 }
