@@ -2,6 +2,7 @@ package quest.outdoor;
 
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 
 import java.util.ArrayList;
 
@@ -77,5 +78,12 @@ public class AppState {
 
     public void setCurrentQuest(Quest currentQuest) {
         this.currentQuest = currentQuest;
+    }
+
+    public Location getCurrentDotLocation()
+    {
+        Location currentDotCoordinates
+                = currentQuest.getDotsArray().get(currentDotNumber).getLocation();
+        return currentDotCoordinates;
     }
 }

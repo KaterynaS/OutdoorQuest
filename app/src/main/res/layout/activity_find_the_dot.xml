@@ -76,7 +76,7 @@
         android:text="Current Coord"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/target_coord_header_textview" />
+        app:layout_constraintTop_toBottomOf="@+id/distance_header_textview" />
 
     <TextView
         android:id="@+id/target_coord_textview"
@@ -87,7 +87,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="TextView"
-        android:textSize="24sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/target_coord_header_textview"
         app:layout_constraintTop_toTopOf="@+id/target_coord_header_textview" />
@@ -101,10 +101,35 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="TextView"
-        android:textSize="24sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/current_coord_header_textview"
         app:layout_constraintTop_toTopOf="@+id/current_coord_header_textview" />
+
+    <TextView
+        android:id="@+id/distance_header_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Distance, m"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/target_coord_header_textview" />
+
+    <TextView
+        android:id="@+id/distance_value_textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:text="TextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/distance_header_textview"
+        app:layout_constraintTop_toTopOf="@+id/distance_header_textview" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
