@@ -60,11 +60,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="Target coord"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dot_description_textView" />
+        app:layout_constraintTop_toBottomOf="@+id/start_tracking_button" />
 
     <TextView
         android:id="@+id/current_coord_header_textview"
@@ -96,14 +96,13 @@
         android:id="@+id/current_coord_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="TextView"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/current_coord_header_textview"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/target_coord_textview"
         app:layout_constraintTop_toTopOf="@+id/current_coord_header_textview" />
 
     <TextView
@@ -122,14 +121,34 @@
         android:id="@+id/distance_value_textview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginLeft="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/distance_header_textview"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/target_coord_textview"
         app:layout_constraintTop_toTopOf="@+id/distance_header_textview" />
+
+    <Button
+        android:id="@+id/start_tracking_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="24dp"
+        android:text="start looking for dot"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dot_description_textView" />
+
+    <Button
+        android:id="@+id/stop_tracking_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:text="stop"
+        app:layout_constraintStart_toEndOf="@+id/start_tracking_button"
+        app:layout_constraintTop_toTopOf="@+id/start_tracking_button" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

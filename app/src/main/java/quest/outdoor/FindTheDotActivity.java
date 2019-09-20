@@ -3,49 +3,43 @@ package quest.outdoor;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnSuccessListener;
-
-import java.util.Locale;
-
 public class FindTheDotActivity extends AppCompatActivity {
 
+    //view
     TextView dotDescriptionTextView;
     Button hintButton;
-
+    Button startTrackingButton;
+    Button stopTrackingButton;
     TextView targetCoordTextview;
     TextView distanceToTarget;
     TextView currentCoordTextview;
-
     Button verifyButton;
+
+    //verification dialog
     EditText codeVerificationInput;
 
+    //app state
     private AppState appState;
-
-    private FusedLocationProviderClient mFusedLocationClient;
-    private int locationRequestCode = 1000;
-    private double wayLatitude = 0.0, wayLongitude = 0.0;
-
-    private LocationRequest locationRequest;
-    private LocationCallback locationCallback;
+    private BroadcastReceiver broadcastReceiver;
 
 
     @Override
@@ -56,17 +50,20 @@ public class FindTheDotActivity extends AppCompatActivity {
         hintButton = findViewById(R.id.hint_button);
         verifyButton = findViewById(R.id.verify_button);
         targetCoordTextview = findViewById(R.id.target_coord_textview);
+        currentCoordTextview = findViewById(R.id.current_coord_textview);
+        startTrackingButton = findViewById(R.id.start_tracking_button);
+        stopTrackingButton = findViewById(R.id.stop_tracking_button);
 
         appState = AppState.getInstance();
 
-        updateUI();
+        updateDotDataOnScreen();
 
-        //location
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        //check for permissions and getLastKnownLocation if the permission just acquired
-        checkForPermissions();
-
+        //if we don't need permission checking => skip this part and enable buttons
+        //if we do need permission checking - we'll handle users answer in onRequestPermissionResult
+        if(!runtime_permissions())
+        {
+            enable_buttons();
+        }
 
 
 
@@ -91,35 +88,105 @@ public class FindTheDotActivity extends AppCompatActivity {
     }
 
 
-    private void checkForPermissions() {
-        // check permission
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // request for permission
-
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                    locationRequestCode);
-
-        } else {
-            // already permission granted
-            mFusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        if(broadcastReceiver == null)
+        {
+            broadcastReceiver = new BroadcastReceiver() {
                 @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        wayLatitude = location.getLatitude();
-                        wayLongitude = location.getLongitude();
-                        currentCoordTextview = FindTheDotActivity.this.findViewById(R.id.current_coord_textview);
-                        String locationString = "Lat: " + String.valueOf(wayLatitude) + "\nLon: " + String.valueOf(wayLongitude);
-                        currentCoordTextview.setText(locationString);
-
-                        float a = location.distanceTo(appState.getCurrentDotLocation());
-                        distanceToTarget = findViewById(R.id.distance_value_textview);
-                        distanceToTarget.setText("" + a);
-
-                    }
+                public void onReceive(Context context, Intent intent) {
+                    String a = "" + intent.getExtras().get("coordinates");
+                    currentCoordTextview.setText(a);
                 }
-            });
+            };
         }
+        registerReceiver(broadcastReceiver, new IntentFilter("location_update"));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(broadcastReceiver != null)
+        {
+            unregisterReceiver(broadcastReceiver);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        //checking if the request code equal to our previously typed code - 100
+        if(requestCode == 100)
+        {
+            //and check if both permissions are granted
+            if(grantResults[0] == PackageManager.PERMISSION_GRANTED
+            && grantResults[1] == PackageManager.PERMISSION_GRANTED)
+            {
+                //if permissions granted - enable buttons
+                enable_buttons();
+            }
+            //if permissions not granted - ask for them again
+            else
+            {
+                runtime_permissions();
+            }
+        }
+    }
+
+    private void enable_buttons() {
+        startTrackingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //intent that points to our GPS service
+                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
+                startService(i);
+            }
+        });
+
+        stopTrackingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(getApplicationContext(), GPS_Service.class);
+                stopService(i);
+            }
+        });
+    }
+
+
+    private boolean runtime_permissions() {
+        //check if version is above 23
+        if(Build.VERSION.SDK_INT >= 23
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED)
+        {
+            //ask for the permissions, 100 - unique request code for permission checking
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                                            Manifest.permission.ACCESS_COARSE_LOCATION},
+                                        100);
+
+            //if we ask for permissions
+            return true;
+        }
+        //if we DON'T ask for permissions
+        return false;
+    }
+
+
+    private void vibrateInLocation(String locationName)
+    {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+// Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(800, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(800);
+        }
+
+        Toast.makeText(FindTheDotActivity.this, "you reached " + locationName, Toast.LENGTH_SHORT).show();
     }
 
     private void verifyCode() {
@@ -147,7 +214,7 @@ public class FindTheDotActivity extends AppCompatActivity {
                     //todo open next dot finder
                     appState.goToNextDot(FindTheDotActivity.this);
                     dialog.cancel();
-                    updateUI();
+                    updateDotDataOnScreen();
                 }
                 else
                 {
@@ -160,20 +227,16 @@ public class FindTheDotActivity extends AppCompatActivity {
         AlertDialog alert = builder.create();
         alert.setTitle("Code verification");
         alert.show();
-
-
     }
 
-    private void updateUI() {
+    private void updateDotDataOnScreen() {
 
         dotDescriptionTextView = findViewById(R.id.dot_description_textView);
         dotDescriptionTextView.setText(appState.getCurrentDotDescription());
-
-        String currentDotLat = String.valueOf(appState.getCurrentDotLocation().getLatitude());
-        String currentDotLon = String.valueOf(appState.getCurrentDotLocation().getLongitude());
-        String currentDotLocation = "Lat: " + currentDotLat + "\nLon: " + currentDotLon;
-        targetCoordTextview.setText(currentDotLocation);
-
+        targetCoordTextview = findViewById(R.id.target_coord_textview);
+        String targetCoord = "lat: " + appState.getCurrentDotLocation().getLatitude()
+                + "\n" + "lon: " + appState.getCurrentDotLocation().getLongitude();
+        targetCoordTextview.setText(targetCoord);
     }
 
     private void showHint() {
